@@ -72,3 +72,27 @@ https://v2-mason.github.io/tradingview-economic-calendar-notion/earnings/?demo=1
 `yfinance` is supported only as a local personal-research staging source. The
 collector refuses to write Yahoo-derived data into the public Pages directory.
 See [`earnings/README.md`](earnings/README.md) for the data flow and field rules.
+
+## Private company news
+
+`scripts/fetch_company_news.py` builds a metadata-only US/HK news queue under
+`.private/`. Moomoo Search News is the discovery layer and every result is
+filtered against the exact watched `related_securities`. An optional SEC
+submissions source adds official US filing metadata when a compliant
+`SEC_USER_AGENT` is configured. All records remain `UNVERIFIED`, no article body
+is stored, and the collector itself performs no Notion write.
+
+The separate `scripts/sync_notion_company_news.mjs` command can project that
+private snapshot into the configured Company News database and maintain a
+compact native Notion `Top Stories` dashboard callout. Each displayed headline
+is a direct external link; the private data is never added to GitHub Pages.
+
+The `/news/` route is a generic TradingView Top Stories shell with switchable
+pool and company controls. A private Notion watchlist data source controls the
+membership; the local sync encodes it in the embed URL fragment, so holdings and
+watchlist membership are not committed to the public Pages repository.
+TradingView Top Stories is a curated per-symbol feed, not a guaranteed real-time
+news API, and some Hong Kong symbols may have no stories.
+
+See [`company-news/README.md`](company-news/README.md) for setup, dry-run,
+fail-closed snapshot behavior, the SEC option, and the JSON Schema.

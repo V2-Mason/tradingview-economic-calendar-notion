@@ -5,6 +5,11 @@
   "description": "Notion-ready economic calendar and reviewed US/HK earnings dashboard.",
   "scripts": {
     "validate": "node scripts/validate.mjs",
-    "preview": "node scripts/serve.mjs"
+    "preview": "node scripts/serve.mjs",
+    "notion:sync": "node scripts/sync_notion_earnings.mjs",
+    "notion:sync-news": "node scripts/sync_notion_company_news.mjs",
+    "notion:sync-news-widget": "node scripts/sync_notion_news_widget.mjs",
+    "notion:setup-news-widget": "node scripts/setup_notion_news_watchlist.mjs",
+    "test:notion-sync": "node --test tests/notion-earnings-sync.test.mjs tests/notion-company-news-sync.test.mjs tests/news-widget-config.test.mjs"
   }
 }

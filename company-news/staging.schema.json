@@ -1,0 +1,322 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://v2-mason.github.io/tradingview-economic-calendar-notion/company-news/staging.schema.json",
+  "title": "Private US/HK company-news staging snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "generatedAt",
+    "dataPolicy",
+    "collector",
+    "watchlist",
+    "coverage",
+    "news",
+    "collectionErrors",
+    "sourceGaps",
+    "limitations"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "dataPolicy": {
+      "const": "PRIVATE_PERSONAL_STAGING_ONLY"
+    },
+    "collector": {
+      "const": "MOOMOO_SEARCH_NEWS_WITH_OPTIONAL_SEC_SUBMISSIONS"
+    },
+    "watchlist": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "tickersRequested", "markets"],
+      "properties": {
+        "file": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tickersRequested": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "markets": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["US", "HK"]
+          }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["moomoo", "sec", "records"],
+      "properties": {
+        "moomoo": {
+          "$ref": "#/$defs/moomooCoverage"
+        },
+        "sec": {
+          "$ref": "#/$defs/secCoverage"
+        },
+        "records": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "news": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/newsRecord"
+      }
+    },
+    "collectionErrors": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "sourceGaps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sourceGap"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  },
+  "$defs": {
+    "moomooCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "tickersRequested",
+        "successfulQueries",
+        "rowsExamined",
+        "exactTickerMatches",
+        "maxRecordsPerTicker",
+        "providerRowsPerQuery",
+        "records"
+      ],
+      "properties": {
+        "status": {
+          "const": "COLLECTED"
+        },
+        "tickersRequested": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "successfulQueries": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rowsExamined": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exactTickerMatches": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxRecordsPerTicker": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "providerRowsPerQuery": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "records": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "secCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "tickersRequested", "records"],
+      "properties": {
+        "status": {
+          "enum": [
+            "COLLECTED",
+            "NOT_APPLICABLE",
+            "SKIPPED_BY_REQUEST",
+            "SKIPPED_MISSING_USER_AGENT"
+          ]
+        },
+        "tickersRequested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "successfulRequests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lookbackDays": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "forms": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "records": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "newsRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "market",
+        "ticker",
+        "company",
+        "title",
+        "source",
+        "publishedAt",
+        "publishedAtRaw",
+        "url",
+        "verificationStatus",
+        "sourceKind",
+        "discoveredBy",
+        "relatedSecurities",
+        "fetchedAt"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^NEWS-[a-f0-9]{20}$"
+        },
+        "market": {
+          "enum": ["US", "HK"]
+        },
+        "ticker": {
+          "type": "string",
+          "minLength": 1
+        },
+        "company": {
+          "type": "string",
+          "minLength": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "publishedAt": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "publishedAtRaw": {
+          "type": ["string", "null"]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "verificationStatus": {
+          "const": "UNVERIFIED"
+        },
+        "sourceKind": {
+          "enum": ["NEWS_AGGREGATOR", "OFFICIAL_REGULATOR"]
+        },
+        "discoveredBy": {
+          "enum": ["MOOMOO_SEARCH_NEWS", "SEC_SUBMISSIONS_API"]
+        },
+        "relatedSecurities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^(US\\.[A-Z0-9][A-Z0-9.\\-]{0,19}|HK\\.[0-9]{5})$"
+          }
+        },
+        "fetchedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "officialMetadata": {
+          "$ref": "#/$defs/officialMetadata"
+        }
+      }
+    },
+    "officialMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cik",
+        "form",
+        "accessionNumber",
+        "filingDate",
+        "reportDate",
+        "items"
+      ],
+      "properties": {
+        "cik": {
+          "type": "string",
+          "pattern": "^[0-9]{10}$"
+        },
+        "form": {
+          "type": "string",
+          "minLength": 1
+        },
+        "accessionNumber": {
+          "type": "string",
+          "minLength": 1
+        },
+        "filingDate": {
+          "type": ["string", "null"]
+        },
+        "reportDate": {
+          "type": ["string", "null"]
+        },
+        "items": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "sourceGap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "market", "detail"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "market": {
+          "enum": ["US", "HK"]
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

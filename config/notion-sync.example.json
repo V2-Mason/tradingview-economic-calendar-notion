@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0.0",
+  "dataSourceId": "00000000-0000-0000-0000-000000000000",
+  "notionCliPackage": "ntn@0.22.3",
+  "companyNews": {
+    "dataSourceId": "00000000-0000-0000-0000-000000000000",
+    "stagingFile": ".private/company-news-staging.json",
+    "maxAgeMinutes": 180,
+    "dashboardFeed": {
+      "blockId": "00000000-0000-0000-0000-000000000000",
+      "fullNewsUrl": "https://www.notion.so/your-company-news-database",
+      "maxItems": 6
+    }
+  },
+  "newsWidget": {
+    "databaseId": "00000000-0000-0000-0000-000000000000",
+    "dataSourceId": "00000000-0000-0000-0000-000000000000",
+    "embedBlockId": "00000000-0000-0000-0000-000000000000",
+    "baseUrl": "https://YOUR_ACCOUNT.github.io/YOUR_REPOSITORY/news/",
+    "locale": "en"
+  },
+  "sources": {
+    "moomoo": {
+      "stagingFile": ".private/moomoo-earnings-staging.json",
+      "maxAgeMinutes": 180,
+      "eventKeyPrefix": "moomoo",
+      "sourceLabel": "Moomoo"
+    },
+    "yahoo": {
+      "stagingFile": ".private/yahoo-earnings-staging.json",
+      "maxAgeMinutes": 180,
+      "eventKeyPrefix": "yahoo",
+      "sourceLabel": "Yahoo (unofficial)"
+    }
+  }
+}

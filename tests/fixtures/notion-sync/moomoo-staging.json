@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-14T20:00:00Z",
+  "events": [
+    {
+      "id": "shared-event",
+      "market": "US",
+      "ticker": "TEST",
+      "company": "Test Systems",
+      "eventName": "Earnings announcement",
+      "scheduledAt": "2026-08-20T16:30:00-04:00",
+      "originalTimezone": "America/New_York",
+      "dateOnly": false,
+      "timeStatus": "ESTIMATED",
+      "session": "AMC",
+      "releaseState": "UPCOMING",
+      "times": {
+        "utc": "2026-08-20T20:30:00Z",
+        "newYork": "2026-08-20T16:30:00-04:00",
+        "hongKong": "2026-08-21T04:30:00+08:00"
+      },
+      "eps": {
+        "actual": null,
+        "consensus": null,
+        "ownForecast": 99,
+        "currency": "USD"
+      },
+      "revenue": {
+        "actual": null,
+        "consensus": 125000000,
+        "ownForecast": 987654321,
+        "currency": "USD"
+      },
+      "marketCap": {
+        "value": 2500000000,
+        "currency": "USD",
+        "asOf": "2026-08-14T20:00:00Z"
+      },
+      "sources": [
+        {
+          "name": "Moomoo OpenAPI Earnings Calendar",
+          "kind": "LICENSED_PROVIDER",
+          "url": "https://openapi.moomoo.com/moomoo-api-doc/quote/get-earnings-calendar.html",
+          "fetchedAt": "2026-08-14T20:00:00Z"
+        }
+      ],
+      "dataStatus": "UNVERIFIED_SECONDARY"
+    }
+  ]
+}

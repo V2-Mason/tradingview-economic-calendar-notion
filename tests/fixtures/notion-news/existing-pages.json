@@ -1,0 +1,48 @@
+[
+  {
+    "id": "news-existing",
+    "properties": {
+      "News Key": {
+        "type": "rich_text",
+        "rich_text": [{ "plain_text": "moomoo:NEWS-11111111111111111111" }]
+      },
+      "Headline": {
+        "type": "title",
+        "title": [{ "plain_text": "Old headline" }]
+      },
+      "Fetched At": {
+        "type": "date",
+        "date": { "start": "2026-08-13T22:00:00Z" }
+      },
+      "Last Seen": {
+        "type": "date",
+        "date": { "start": "2026-08-13T22:00:00Z" }
+      },
+      "Material": {
+        "type": "checkbox",
+        "checkbox": true
+      },
+      "Source Status": {
+        "type": "select",
+        "select": { "name": "Ready" }
+      }
+    }
+  },
+  {
+    "id": "news-stale",
+    "properties": {
+      "News Key": {
+        "type": "rich_text",
+        "rich_text": [{ "plain_text": "moomoo:NEWS-old" }]
+      },
+      "Source Status": {
+        "type": "select",
+        "select": { "name": "Ready" }
+      },
+      "Material": {
+        "type": "checkbox",
+        "checkbox": true
+      }
+    }
+  }
+]
