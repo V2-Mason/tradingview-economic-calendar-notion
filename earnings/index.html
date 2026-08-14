@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>HK &amp; US Earnings Calendar</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/skeleton.css"
+    >
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/monarch/theme.css"
+    >
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/monarch/palettes/blue.css"
+    >
+
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: #ffffff;
+        --panel-bg: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+        --soft: #f8fafc;
+        --chip: #f3f4f6;
+        --chip-active: #e8f0ff;
+        --chip-active-border: #93b4ff;
+        --focus: #2563eb;
+        --us: #2563eb;
+        --hk: #dc2626;
+        --estimated: #9ca3af;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        min-width: 300px;
+        min-height: 640px;
+        margin: 0;
+        background: var(--page-bg);
+        color: var(--text);
+      }
+
+      body {
+        padding: 14px;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      button,
+      a {
+        font: inherit;
+      }
+
+      .calendar-shell {
+        width: 100%;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+
+      .page-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 12px;
+      }
+
+      .title-block h1 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+      }
+
+      .title-block p {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 7px;
+      }
+
+      .filter-chip {
+        min-height: 32px;
+        padding: 5px 11px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--chip);
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 650;
+      }
+
+      .filter-chip[aria-pressed="true"] {
+        border-color: var(--chip-active-border);
+        background: var(--chip-active);
+        color: var(--text);
+      }
+
+      .filter-chip:focus-visible,
+      .dialog-close:focus-visible,
+      .dialog-link:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      .calendar-panel {
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--panel-bg);
+      }
+
+      #calendar {
+        min-height: 570px;
+        padding: 12px;
+      }
+
+      .status-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 37px;
+        padding: 8px 13px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .legend-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--estimated);
+      }
+
+      .legend-dot.us {
+        background: var(--us);
+      }
+
+      .legend-dot.hk {
+        background: var(--hk);
+      }
+
+      .legend-dot.estimated {
+        border: 1px dashed var(--estimated);
+        background: transparent;
+      }
+
+      .fc {
+        --fc-border-color: var(--border);
+        --fc-page-bg-color: var(--panel-bg);
+        --fc-neutral-bg-color: var(--soft);
+        --fc-list-event-hover-bg-color: var(--soft);
+        color: var(--text);
+        font-size: 13px;
+      }
+
+      .fc .fc-toolbar-title {
+        font-size: 17px;
+        font-weight: 700;
+      }
+
+      .fc .fc-button {
+        font-size: 12px;
+      }
+
+      .fc .fc-daygrid-day-number,
+      .fc .fc-col-header-cell-cushion,
+      .fc .fc-list-day-text,
+      .fc .fc-list-day-side-text {
+        color: var(--text);
+        text-decoration: none;
+      }
+
+      .fc .fc-day-other .fc-daygrid-day-number {
+        color: var(--muted);
+      }
+
+      .fc-event {
+        cursor: pointer;
+      }
+
+      .fc-event.event-estimated {
+        border-style: dashed !important;
+        opacity: 0.82;
+      }
+
+      dialog {
+        width: min(460px, calc(100vw - 32px));
+        padding: 0;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--panel-bg);
+        color: var(--text);
+        box-shadow: 0 24px 70px rgb(15 23 42 / 24%);
+      }
+
+      dialog::backdrop {
+        background: rgb(15 23 42 / 38%);
+      }
+
+      .dialog-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 18px 18px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .dialog-head h2 {
+        margin: 0;
+        font-size: 17px;
+      }
+
+      .dialog-head p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .dialog-close {
+        width: 30px;
+        height: 30px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--chip);
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .dialog-body {
+        display: grid;
+        grid-template-columns: 112px minmax(0, 1fr);
+        gap: 9px 14px;
+        padding: 16px 18px 18px;
+        font-size: 13px;
+      }
+
+      .dialog-label {
+        color: var(--muted);
+      }
+
+      .dialog-value {
+        overflow-wrap: anywhere;
+      }
+
+      .dialog-link {
+        color: var(--focus);
+        text-decoration: none;
+      }
+
+      .dialog-link:hover {
+        text-decoration: underline;
+      }
+
+      body.compact .page-head {
+        justify-content: flex-end;
+      }
+
+      body.compact .title-block {
+        display: none;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page-bg: #191919;
+          --panel-bg: #202020;
+          --text: #f3f4f6;
+          --muted: #a1a1aa;
+          --border: #353535;
+          --soft: #292929;
+          --chip: #292929;
+          --chip-active: #263756;
+          --chip-active-border: #4d72b8;
+          --focus: #76a7ff;
+          --us: #4f8df7;
+          --hk: #f06464;
+          --estimated: #a1a1aa;
+        }
+      }
+
+      @media (max-width: 760px) {
+        body {
+          padding: 8px;
+        }
+
+        .page-head {
+          display: block;
+        }
+
+        .filters {
+          justify-content: flex-start;
+          margin-top: 10px;
+        }
+
+        .fc .fc-toolbar {
+          align-items: stretch;
+          gap: 8px;
+        }
+
+        .fc .fc-toolbar.fc-header-toolbar {
+          flex-wrap: wrap;
+        }
+
+        .fc .fc-toolbar-chunk:nth-child(2) {
+          order: -1;
+          width: 100%;
+        }
+
+        .fc .fc-toolbar-title {
+          text-align: center;
+        }
+
+        .status-line {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/all/global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/themes/monarch/global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/locales/zh-cn/global.js"></script>
+  </head>
+  <body>
+    <main class="calendar-shell">
+      <header class="page-head">
+        <div class="title-block">
+          <h1>港股 · 美股财报日历</h1>
+          <p>只显示公开财报事件；日期是否确认由数据记录明确标识。</p>
+        </div>
+
+        <div class="filters" aria-label="财报日历筛选">
+          <button class="filter-chip" type="button" data-group="market" data-value="US" aria-pressed="true">
+            🇺🇸 US
+          </button>
+          <button class="filter-chip" type="button" data-group="market" data-value="HK" aria-pressed="true">
+            🇭🇰 HK
+          </button>
+          <button class="filter-chip" type="button" data-group="confidence" data-value="CONFIRMED" aria-pressed="true">
+            已确认
+          </button>
+          <button class="filter-chip" type="button" data-group="confidence" data-value="ESTIMATED" aria-pressed="true">
+            预计
+          </button>
+        </div>
+      </header>
+
+      <section class="calendar-panel" aria-label="财报月历">
+        <div id="calendar"></div>
+        <div class="status-line" role="status" aria-live="polite">
+          <div class="legend" aria-label="图例">
+            <span class="legend-item"><span class="legend-dot us"></span>US</span>
+            <span class="legend-item"><span class="legend-dot hk"></span>HK</span>
+            <span class="legend-item"><span class="legend-dot estimated"></span>预计日期</span>
+          </div>
+          <span id="data-status">正在读取财报事件…</span>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="event-dialog" aria-labelledby="dialog-title">
+      <div class="dialog-head">
+        <div>
+          <h2 id="dialog-title">财报事件</h2>
+          <p id="dialog-subtitle"></p>
+        </div>
+        <button class="dialog-close" type="button" aria-label="关闭">×</button>
+      </div>
+      <div class="dialog-body" id="dialog-body"></div>
+    </dialog>
+
+    <noscript>
+      <p>此财报日历需要 JavaScript。</p>
+    </noscript>
+
+    <script>
+      (() => {
+        "use strict";
+
+        const params = new URLSearchParams(window.location.search);
+        const demoMode = params.get("demo") === "1";
+        const compactMode = params.get("compact") === "1";
+        const eventSource = demoMode ? "events.demo.json" : "events.json";
+        const status = document.getElementById("data-status");
+        const dialog = document.getElementById("event-dialog");
+        const dialogTitle = document.getElementById("dialog-title");
+        const dialogSubtitle = document.getElementById("dialog-subtitle");
+        const dialogBody = document.getElementById("dialog-body");
+
+        const activeFilters = {
+          market: new Set(["US", "HK"]),
+          confidence: new Set(["CONFIRMED", "ESTIMATED"]),
+        };
+
+        if (compactMode) document.body.classList.add("compact");
+
+        function eventMatches(event) {
+          const props = event.extendedProps || {};
+          return (
+            activeFilters.market.has(props.market) &&
+            activeFilters.confidence.has(props.confidence)
+          );
+        }
+
+        async function loadEvents(fetchInfo, successCallback, failureCallback) {
+          try {
+            const response = await fetch(`${eventSource}?v=1`, { cache: "no-store" });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const events = await response.json();
+            if (!Array.isArray(events)) throw new Error("事件数据必须是数组");
+
+            const visibleEvents = events.filter(eventMatches);
+            const suffix = demoMode ? " · 演示数据" : "";
+            status.textContent = visibleEvents.length
+              ? `显示 ${visibleEvents.length} 个事件${suffix}`
+              : `当前筛选范围没有已发布的财报事件${suffix}`;
+            successCallback(visibleEvents);
+          } catch (error) {
+            status.textContent = "财报事件读取失败，请稍后刷新";
+            failureCallback(error);
+          }
+        }
+
+        function addDialogRow(label, value, options = {}) {
+          if (!value) return;
+
+          const labelElement = document.createElement("div");
+          labelElement.className = "dialog-label";
+          labelElement.textContent = label;
+
+          const valueElement = options.href
+            ? document.createElement("a")
+            : document.createElement("div");
+          valueElement.className = options.href
+            ? "dialog-value dialog-link"
+            : "dialog-value";
+          valueElement.textContent = value;
+
+          if (options.href) {
+            valueElement.href = options.href;
+            valueElement.target = "_blank";
+            valueElement.rel = "noopener noreferrer";
+          }
+
+          dialogBody.append(labelElement, valueElement);
+        }
+
+        function openEventDialog(event) {
+          const props = event.extendedProps || {};
+          dialogTitle.textContent = `${props.symbol || ""} ${props.company || event.title}`.trim();
+          dialogSubtitle.textContent = `${props.market || ""} · ${props.confidence === "CONFIRMED" ? "已确认" : "预计"}`;
+          dialogBody.replaceChildren();
+
+          addDialogRow("财报期间", props.period);
+          addDialogRow("发布时段", props.session);
+          addDialogRow("原始时区", props.originalTimezone);
+          addDialogRow("纽约时间", props.newYorkTime);
+          addDialogRow("香港时间", props.hongKongTime);
+          addDialogRow("更新时间", props.sourcePublishedAt);
+          addDialogRow("官方来源", props.sourceLabel || "打开来源", {
+            href: props.sourceUrl,
+          });
+
+          if (typeof dialog.showModal === "function") dialog.showModal();
+        }
+
+        const calendar = new FullCalendar.Calendar(
+          document.getElementById("calendar"),
+          {
+            initialView: "dayGridMonth",
+            initialDate: demoMode ? "2026-08-14" : undefined,
+            locale: "zh-cn",
+            firstDay: 1,
+            height: "auto",
+            expandRows: true,
+            fixedWeekCount: false,
+            dayMaxEvents: 3,
+            navLinks: true,
+            nowIndicator: true,
+            displayEventTime: false,
+            eventDisplay: "block",
+            noEventsContent: "当前筛选范围没有财报事件",
+            headerToolbar: {
+              start: "prev,next today",
+              center: "title",
+              end: "dayGridMonth,listMonth",
+            },
+            events: loadEvents,
+            eventClass(info) {
+              const props = info.event.extendedProps || {};
+              return props.confidence === "ESTIMATED" ? "event-estimated" : "";
+            },
+            eventClick(info) {
+              info.jsEvent.preventDefault();
+              openEventDialog(info.event);
+            },
+          },
+        );
+
+        calendar.render();
+
+        document.querySelectorAll(".filter-chip").forEach((button) => {
+          button.addEventListener("click", () => {
+            const group = button.dataset.group;
+            const value = button.dataset.value;
+            const currentlyPressed = button.getAttribute("aria-pressed") === "true";
+
+            button.setAttribute("aria-pressed", String(!currentlyPressed));
+            if (currentlyPressed) activeFilters[group].delete(value);
+            else activeFilters[group].add(value);
+
+            calendar.refetchEvents();
+          });
+        });
+
+        document.querySelector(".dialog-close").addEventListener("click", () => {
+          dialog.close();
+        });
+
+        dialog.addEventListener("click", (event) => {
+          if (event.target === dialog) dialog.close();
+        });
+      })();
+    </script>
+  </body>
+</html>

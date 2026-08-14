@@ -1,0 +1,44 @@
+[
+  {
+    "id": "DEMO-US-2026-08-18",
+    "title": "AMC · US.TEST | Sample Cloud",
+    "start": "2026-08-18",
+    "allDay": true,
+    "color": "#2563eb",
+    "contrastColor": "#ffffff",
+    "extendedProps": {
+      "market": "US",
+      "symbol": "US.TEST",
+      "company": "Sample Cloud",
+      "period": "Q2 2026 · 演示事件",
+      "session": "AMC · 盘后",
+      "confidence": "CONFIRMED",
+      "originalTimezone": "America/New_York",
+      "newYorkTime": "2026-08-18 · AMC",
+      "hongKongTime": "2026-08-19 · 盘前",
+      "sourcePublishedAt": "演示数据",
+      "sourceLabel": "无外部来源"
+    }
+  },
+  {
+    "id": "DEMO-HK-2026-08-20",
+    "title": "TBD · HK.00000 | 示例科技",
+    "start": "2026-08-20",
+    "allDay": true,
+    "color": "#dc2626",
+    "contrastColor": "#ffffff",
+    "extendedProps": {
+      "market": "HK",
+      "symbol": "HK.00000",
+      "company": "示例科技",
+      "period": "H1 2026 · 演示事件",
+      "session": "TBD · 时间待定",
+      "confidence": "ESTIMATED",
+      "originalTimezone": "Asia/Hong_Kong",
+      "newYorkTime": "日期待确认",
+      "hongKongTime": "2026-08-20 · 时间待确认",
+      "sourcePublishedAt": "演示数据",
+      "sourceLabel": "无外部来源"
+    }
+  }
+]
