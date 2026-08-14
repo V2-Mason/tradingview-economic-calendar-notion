@@ -1,61 +1,97 @@
-# HK & US Earnings Calendar
+# US & HK earnings dashboard
 
-This directory contains a free FullCalendar Standard month view for embedding in
-Notion. The production page reads `events.json`; `events.demo.json` is synthetic
-and is loaded only when the URL includes `?demo=1`.
+This route replaces the FullCalendar experiment with a date-grouped table that
+keeps the useful Finlogix reading pattern:
+
+- company and ticker;
+- EPS actual, market consensus, and optional user forecast;
+- revenue actual, market consensus, and optional user forecast;
+- market cap;
+- BMO/AMC/unknown timing and released status;
+- original timezone plus UTC, New York, and Hong Kong materializations in the
+  event detail dialog.
 
 ## URLs
 
-Production:
+Production shell:
 
 ```text
 https://v2-mason.github.io/tradingview-economic-calendar-notion/earnings/?compact=1
 ```
 
-Visual demo:
+Synthetic appearance preview:
 
 ```text
-https://v2-mason.github.io/tradingview-economic-calendar-notion/earnings/?demo=1
+https://v2-mason.github.io/tradingview-economic-calendar-notion/earnings/?demo=1&compact=1
 ```
 
-## Public-data boundary
+Optional parameters include `range=next-week`, `markets=US,HK`,
+`timezone=Asia/Hong_Kong`, and `theme=dark`.
 
-GitHub Pages and this repository are public. Do not put account identifiers,
-position sizes, position/watchlist classifications, private Notion URLs, API
-keys, or other portfolio-sensitive data in either JSON file. A future publisher
-may emit public earnings events, but private portfolio filtering requires a
-separate private delivery design.
+## Data layers
 
-## Event shape
-
-Each production event is a FullCalendar event object. Governance metadata is
-stored under `extendedProps`:
-
-```json
-{
-  "id": "stable-versioned-event-id",
-  "title": "AMC · US.SYMBOL | Company",
-  "start": "2026-08-18",
-  "allDay": true,
-  "color": "#2563eb",
-  "contrastColor": "#ffffff",
-  "extendedProps": {
-    "market": "US",
-    "symbol": "US.SYMBOL",
-    "company": "Company",
-    "period": "Q2 2026",
-    "session": "AMC",
-    "confidence": "CONFIRMED",
-    "originalTimezone": "America/New_York",
-    "newYorkTime": "2026-08-18 · AMC",
-    "hongKongTime": "2026-08-19 · 盘前",
-    "sourcePublishedAt": "2026-08-01T12:00:00Z",
-    "sourceLabel": "Company investor relations",
-    "sourceUrl": "https://issuer.example/official-release"
-  }
-}
+```text
+yfinance personal staging (.private/, never committed)
+                  │
+                  ▼ manual verification / licensed replacement
+reviewed public feed (earnings/data/events.json)
+                  │
+                  ▼
+GitHub Pages → Notion embed
 ```
 
-`confidence` must be `CONFIRMED` or `ESTIMATED`. A price move is never evidence
-that an earnings event occurred. Production records need an official source and
-the source's original IANA timezone before being treated as confirmed.
+The Pages repository is public. Do not put holdings, position sizes, costs,
+stops, account identifiers, private Notion links, secrets, or an explicitly
+labelled private watchlist into the public feed.
+
+## Local yfinance staging
+
+The collector is for personal research and does not make Yahoo an official or
+governed event source. It deliberately refuses any output path under
+`earnings/data/`.
+
+On Windows:
+
+```powershell
+New-Item -ItemType Directory -Force .private
+Copy-Item config/watchlist.example.json .private/watchlist.json
+py -m venv .private/.venv
+.private/.venv/Scripts/python.exe -m pip install -r requirements-yfinance.txt
+.private/.venv/Scripts/python.exe scripts/fetch_yfinance_earnings.py
+```
+
+The default result is `.private/yfinance-earnings-staging.json`. It contains
+`UNVERIFIED_SECONDARY`, `PERSONAL_USE_ONLY`, and
+`publicReleaseApproved=false` markers.
+
+The collector supports an exact US/HK ticker list. Use Yahoo codes such as
+`AAPL` and `0700.HK`. The checked-in example is illustrative and is not the
+user's real watchlist.
+
+## Why staging cannot be published automatically
+
+`yfinance` is an unofficial wrapper and states that Yahoo Finance data is for
+personal use. This collector uses only the ticker-scoped quote-summary calendar
+for the next earnings date, EPS/revenue estimates, and market cap. It does not
+trust the Yahoo earnings HTML table for ticker ownership, because the live page
+has been observed ignoring its `symbol=` filter. Historical EPS/revenue actuals
+therefore remain null until they are aligned and verified from an official
+filing or results release.
+
+The Yahoo date is treated as date-only. BMO/AMC remains `UNKNOWN` until issuer
+IR, SEC, or HKEX confirms the release time. Estimate currency comes from the
+issuer's reported financial currency when Yahoo supplies it; trading currency
+is used only for market cap.
+
+Before an event enters `events.json`:
+
+1. confirm the event date and time from issuer IR, SEC, or HKEX;
+2. confirm released actual values from the original filing or results release;
+3. use only a licensed provider for market-consensus fields, or leave them null;
+4. keep the user's forecast marked as user-owned;
+5. set `dataStatus=PUBLIC_REVIEWED`, use an allowed redistribution status, and
+   set `publicReleaseApproved=true`;
+6. run `npm run validate`.
+
+The public feed schema is [`public-feed.schema.json`](public-feed.schema.json).
+Presentation data never becomes canonical investment-workbench state.

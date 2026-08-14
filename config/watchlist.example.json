@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "tickers": [
+    {
+      "ticker": "AAPL",
+      "market": "US",
+      "companyName": "Apple Inc.",
+      "ownForecast": {
+        "eps": null,
+        "revenue": null,
+        "currency": "USD"
+      }
+    },
+    {
+      "ticker": "0700.HK",
+      "market": "HK",
+      "companyName": "Tencent Holdings Limited",
+      "ownForecast": {
+        "eps": null,
+        "revenue": null,
+        "currency": "HKD"
+      }
+    }
+  ]
+}

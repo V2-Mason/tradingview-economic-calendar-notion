@@ -52,15 +52,23 @@ sources and recorded in the governed event calendar.
 
 TradingView's widget terms and attribution requirements continue to apply.
 
-## HK & US earnings calendar
+## US & HK earnings dashboard
 
-A separate FullCalendar Standard month view is available at:
+The earnings route uses a date-grouped financial table rather than a month grid:
 
 ```text
 https://v2-mason.github.io/tradingview-economic-calendar-notion/earnings/?compact=1
 ```
 
-The production feed is intentionally empty until verified earnings events are
-published. A synthetic appearance test is available with `?demo=1`. See
-[`earnings/README.md`](earnings/README.md) for the event shape and public-data
-boundary.
+It is designed to show EPS and revenue actual/forecast values, market cap,
+release timing, and a user-owned forecast without exposing holdings or account
+data. The committed production feed is intentionally empty until reviewed data
+with publication rights is supplied. A synthetic visual preview is available at:
+
+```text
+https://v2-mason.github.io/tradingview-economic-calendar-notion/earnings/?demo=1&compact=1
+```
+
+`yfinance` is supported only as a local personal-research staging source. The
+collector refuses to write Yahoo-derived data into the public Pages directory.
+See [`earnings/README.md`](earnings/README.md) for the data flow and field rules.
