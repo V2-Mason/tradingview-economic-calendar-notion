@@ -51,16 +51,3 @@ investment decisions should still be verified against their original official
 sources and recorded in the governed event calendar.
 
 TradingView's widget terms and attribution requirements continue to apply.
-
-## HK & US earnings calendar
-
-A separate FullCalendar Standard month view is available at:
-
-```text
-https://v2-mason.github.io/tradingview-economic-calendar-notion/earnings/?compact=1
-```
-
-The production feed is intentionally empty until verified earnings events are
-published. A synthetic appearance test is available with `?demo=1`. See
-[`earnings/README.md`](earnings/README.md) for the event shape and public-data
-boundary.
