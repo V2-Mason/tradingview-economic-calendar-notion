@@ -11,6 +11,10 @@ keeps the useful Finlogix reading pattern:
 - original timezone plus UTC, New York, and Hong Kong materializations in the
   event detail dialog.
 
+The private Notion build has two independent, switchable providers. Moomoo and
+Yahoo use the same controls, table, and detail dialog, but their snapshots are
+never merged or used to silently fill one another's missing fields.
+
 ## URLs
 
 Production shell:
@@ -26,23 +30,36 @@ https://v2-mason.github.io/tradingview-economic-calendar-notion/earnings/?demo=1
 ```
 
 Optional parameters include `range=next-week`, `markets=US,HK`,
-`timezone=Asia/Hong_Kong`, and `theme=dark`.
+`timezone=Asia/Hong_Kong`, `source=moomoo|yahoo`, and `theme=dark`.
 
 ## Data layers
 
 ```text
-yfinance personal staging (.private/, never committed)
-                  │
-                  ▼ manual verification / licensed replacement
-reviewed public feed (earnings/data/events.json)
-                  │
-                  ▼
-GitHub Pages → Notion embed
+Moomoo OpenD snapshot ─┐
+                       ├─ private source catalog → single-file Notion attachment
+Yahoo personal staging ┘
+
+reviewed public feed → GitHub Pages shell (no personal provider data)
 ```
 
 The Pages repository is public. Do not put holdings, position sizes, costs,
 stops, account identifiers, private Notion links, secrets, or an explicitly
 labelled private watchlist into the public feed.
+
+## Local Moomoo staging
+
+Moomoo is the preferred private source when a current snapshot is available.
+The collector connects only to loopback OpenD and creates no trade context:
+
+```powershell
+python scripts/fetch_moomoo_earnings.py
+```
+
+It writes `.private/moomoo-earnings-staging.json`, which is ignored by Git. The
+collector reads only the earnings-calendar endpoint; it does not read account
+data, unlock trading, or submit an order. Moomoo timestamps and BEFORE/AFTER
+labels remain provider observations until issuer IR, SEC, or HKEX confirms
+them.
 
 ## Local yfinance staging
 
@@ -95,3 +112,14 @@ Before an event enters `events.json`:
 
 The public feed schema is [`public-feed.schema.json`](public-feed.schema.json).
 Presentation data never becomes canonical investment-workbench state.
+
+## Private Notion build
+
+After refreshing either provider, build the self-contained attachment:
+
+```powershell
+node .private/build_notion_earnings.mjs
+```
+
+If Moomoo is unavailable, its tab remains visible with an explicit `未连接`
+state; the interface never falls back to Yahoo without the user selecting it.

@@ -13,6 +13,7 @@ const [
   publicSchema,
   watchlistExample,
   yfinanceScript,
+  moomooScript,
   gitignore,
 ] = await Promise.all([
   read("index.html"),
@@ -24,6 +25,7 @@ const [
   parseJson("earnings/public-feed.schema.json"),
   parseJson("config/watchlist.example.json"),
   read("scripts/fetch_yfinance_earnings.py"),
+  read("scripts/fetch_moomoo_earnings.py"),
   read(".gitignore"),
 ]);
 
@@ -47,18 +49,27 @@ const earningsChecks = [
   ["self-hosted earnings styles", /<link rel="stylesheet" href="styles\.css"/],
   ["strict earnings CSP", /Content-Security-Policy/],
   ["date range tabs", /data-range="next-week"/],
+  ["Moomoo source tab", /data-source="moomoo"/],
+  ["Yahoo source tab", /data-source="yahoo"/],
+  ["no Bloomberg source tab", /^(?![\s\S]*data-source="bloomberg")[\s\S]*$/],
   ["US and HK filters", /name="market" value="US"[\s\S]*name="market" value="HK"/],
   ["EPS Actual and Forecast columns", /EPS[\s\S]*Actual[\s\S]*Forecast/],
   ["Revenue Actual and Forecast columns", /Revenue[\s\S]*Actual[\s\S]*Forecast/],
   ["market cap column", /Market Cap/],
   ["no FullCalendar dependency", /^(?![\s\S]*FullCalendar)[\s\S]*$/i],
   ["no external earnings script", /^(?![\s\S]*<script[^>]+https?:\/\/)[\s\S]*$/i],
+  ["explicit dialog close button", /id="dialog-close"/],
 ];
 
 const appChecks = [
   ["production/demo feed selection", /demoMode \? "data\/events\.demo\.json" : "data\/events\.json"/],
+  ["two-source contract", /new Set\(\["moomoo", "yahoo"\]\)/],
+  ["source selection", /function selectSource\(source\)/],
+  ["embedded private source catalog", /window\.__EARNINGS_SOURCE_CATALOG__/],
+  ["explicit dialog close", /dialogClose\.addEventListener\("click", \(\) => elements\.dialog\.close\(\)\)/],
   ["New York timezone", /America\/New_York/],
   ["Hong Kong timezone", /Asia\/Hong_Kong/],
+  ["date-only conversion fail closed", /REVIEW_REQUIRED · 无法精确换算/],
   ["safe DOM text rendering", /\.textContent\s*=/],
   ["no dynamic innerHTML", /^(?![\s\S]*\.innerHTML\s*=)[\s\S]*$/],
   ["price-action inference warning", /不根据价格行为反推/],
@@ -77,6 +88,18 @@ const stagingChecks = [
   ["Hong Kong materialization", /ZoneInfo\("Asia\/Hong_Kong"\)/],
 ];
 
+const moomooChecks = [
+  ["read-only quote context", /OpenQuoteContext/],
+  ["earnings calendar endpoint", /get_earnings_calendar/],
+  ["loopback-only OpenD", /args\.host != "127\.0\.0\.1"/],
+  ["private Moomoo staging policy", /MOOMOO_PERSONAL_STAGING_ONLY/],
+  ["no trade context", /^(?![\s\S]*OpenTradeContext)[\s\S]*$/],
+  ["no trade unlock", /^(?![\s\S]*unlock_trade)[\s\S]*$/],
+  ["Moomoo UTC materialization", /"utc": instant\.isoformat/],
+  ["Moomoo New York materialization", /zoned_iso\(instant, "America\/New_York"\)/],
+  ["Moomoo Hong Kong materialization", /zoned_iso\(instant, "Asia\/Hong_Kong"\)/],
+];
+
 if (/get_earnings_dates\s*\(/.test(yfinanceScript)) {
   fail("yfinance staging must not consume the ambiguous Yahoo earnings HTML table");
 }
@@ -86,6 +109,7 @@ for (const [group, source, checks] of [
   ["earnings", earningsHtml, earningsChecks],
   ["earnings app", earningsJs, appChecks],
   ["yfinance staging", yfinanceScript, stagingChecks],
+  ["Moomoo staging", moomooScript, moomooChecks],
 ]) {
   const failures = checks
     .filter(([, pattern]) => !pattern.test(source))
@@ -173,7 +197,7 @@ if (sensitivePatterns.some((pattern) => pattern.test(publicFiles))) {
 }
 
 console.log(
-  `Validated ${rootChecks.length + earningsChecks.length + appChecks.length + stagingChecks.length} static checks, ` +
+  `Validated ${rootChecks.length + earningsChecks.length + appChecks.length + stagingChecks.length + moomooChecks.length} static checks, ` +
     `${publicFeed.events.length} production events, ${demoFeed.events.length} synthetic events, ` +
     "and the public/private data boundary.",
 );

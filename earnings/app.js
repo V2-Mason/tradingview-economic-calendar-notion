@@ -23,7 +23,9 @@ const elements = {
   resultCount: document.querySelector("#result-count"),
   timezone: document.querySelector("#timezone-select"),
   search: document.querySelector("#search-input"),
+  sourceTabs: [...document.querySelectorAll("[data-source]")],
   dialog: document.querySelector("#event-dialog"),
+  dialogClose: document.querySelector("#dialog-close"),
   dialogContent: document.querySelector("#dialog-content"),
 };
 
@@ -41,6 +43,8 @@ const requestedMarkets = (params.get("markets") || "US,HK")
   .split(",")
   .filter((market) => ["US", "HK"].includes(market));
 const requestedTimezone = params.get("timezone");
+const validSources = new Set(["moomoo", "yahoo"]);
+const requestedSource = (params.get("source") || "").toLocaleLowerCase();
 
 const state = {
   range: validRanges.has(requestedRange) ? requestedRange : "next-week",
@@ -50,13 +54,19 @@ const state = {
       ? "Asia/Hong_Kong"
       : "America/New_York",
   query: "",
+  source: validSources.has(requestedSource) ? requestedSource : null,
+  catalog: null,
   feed: null,
 };
 
 initializeControls();
-loadFeed();
+loadSources();
 
 function initializeControls() {
+  elements.sourceTabs.forEach((button) => {
+    button.addEventListener("click", () => selectSource(button.dataset.source));
+  });
+
   document.querySelectorAll("[data-range]").forEach((button) => {
     const active = button.dataset.range === state.range;
     button.classList.toggle("is-active", active);
@@ -94,21 +104,35 @@ function initializeControls() {
     state.query = elements.search.value.trim().toLocaleLowerCase();
     render();
   });
+
+  elements.dialogClose.addEventListener("click", () => elements.dialog.close());
+  elements.dialog.addEventListener("click", (event) => {
+    if (event.target === elements.dialog) {
+      elements.dialog.close();
+    }
+  });
 }
 
-async function loadFeed() {
-  const source = demoMode ? "data/events.demo.json" : "data/events.json";
+async function loadSources() {
   try {
-    const response = await fetch(source, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    let catalog = window.__EARNINGS_SOURCE_CATALOG__;
+    if (!catalog) {
+      const path = demoMode ? "data/events.demo.json" : "data/events.json";
+      const response = await fetch(path, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const feed = await response.json();
+      assertFeed(feed);
+      catalog = fallbackCatalog(feed);
     }
-    const feed = await response.json();
-    assertFeed(feed);
-    state.feed = feed;
-    updateFreshness();
-    updateNotice();
-    render();
+    assertCatalog(catalog);
+    state.catalog = catalog;
+    const initialSource =
+      (state.source && catalog.sources[state.source] && state.source) ||
+      catalog.defaultSource ||
+      "yahoo";
+    selectSource(initialSource);
   } catch (error) {
     elements.freshnessText.textContent = "数据读取失败";
     elements.notice.hidden = false;
@@ -116,6 +140,91 @@ async function loadFeed() {
     elements.empty.hidden = false;
     elements.tableScroll.hidden = true;
   }
+}
+
+function fallbackCatalog(feed) {
+  const emptyFeed = (policy) => ({
+    schemaVersion: "1.0.0",
+    generatedAt: null,
+    dataPolicy: policy,
+    events: [],
+  });
+  return {
+    schemaVersion: "1.0.0",
+    defaultSource: "yahoo",
+    sources: {
+      moomoo: {
+        label: "Moomoo",
+        status: "NOT_CONNECTED",
+        message: "Moomoo 私有快照尚未连接；需要本机 OpenD 只读采集后重新生成。",
+        feed: emptyFeed("MOOMOO_PERSONAL_STAGING_ONLY"),
+      },
+      yahoo: {
+        label: "Yahoo",
+        status: feed.events.length > 0 ? "READY" : "NO_DATA",
+        message: demoMode
+          ? "当前为合成预览数据，不代表真实公司、预测或财报结果。"
+          : "公开仓库不保存 Yahoo 私人数据；请在私有 Notion 附件中查看。",
+        feed,
+      },
+    },
+  };
+}
+
+function assertCatalog(catalog) {
+  if (!catalog || catalog.schemaVersion !== "1.0.0" || !catalog.sources) {
+    throw new Error("不支持的数据源目录");
+  }
+  for (const source of validSources) {
+    const entry = catalog.sources[source];
+    if (!entry || !entry.label || !entry.status || !entry.feed) {
+      throw new Error(`数据源 ${source} 缺少必要字段`);
+    }
+    assertFeed(entry.feed);
+  }
+}
+
+function selectSource(source) {
+  if (!state.catalog?.sources[source] || !validSources.has(source)) {
+    return;
+  }
+  if (elements.dialog.open) {
+    elements.dialog.close();
+  }
+  state.source = source;
+  state.feed = state.catalog.sources[source].feed;
+  updateSourceControls();
+  updateFreshness();
+  updateNotice();
+  render();
+}
+
+function currentSource() {
+  return state.catalog?.sources[state.source] || null;
+}
+
+function updateSourceControls() {
+  elements.sourceTabs.forEach((button) => {
+    const source = button.dataset.source;
+    const entry = state.catalog.sources[source];
+    const active = source === state.source;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-selected", String(active));
+    button.dataset.status = entry.status;
+    const status = button.querySelector("[data-source-status]");
+    status.textContent = sourceStatusLabel(entry);
+  });
+}
+
+function sourceStatusLabel(entry) {
+  const labels = {
+    NOT_CONNECTED: "未连接",
+    NO_DATA: "无数据",
+    ERROR: "错误",
+  };
+  return entry.status === "READY"
+    ? `${entry.feed.events.length} 条`
+    : labels[entry.status] || entry.status;
 }
 
 function assertFeed(feed) {
@@ -136,11 +245,19 @@ function assertFeed(feed) {
 }
 
 function updateFreshness() {
+  const source = currentSource();
+  elements.freshness.classList.remove("is-fresh");
+  if (!source || source.status !== "READY") {
+    elements.freshnessText.textContent = source
+      ? `${source.label} · ${sourceStatusLabel(source)}`
+      : "暂无数据源";
+    return;
+  }
   const generatedAt = state.feed.generatedAt
     ? new Date(state.feed.generatedAt)
     : null;
   if (!generatedAt || Number.isNaN(generatedAt.getTime())) {
-    elements.freshnessText.textContent = "暂无已审核数据";
+    elements.freshnessText.textContent = `${source.label} · 更新时间未知`;
     return;
   }
   const ageHours = Math.max(0, (Date.now() - generatedAt.getTime()) / 3_600_000);
@@ -151,21 +268,19 @@ function updateFreshness() {
     minute: "2-digit",
     timeZone: state.timezone,
   });
-  elements.freshnessText.textContent = `更新于 ${formatter.format(generatedAt)}`;
+  elements.freshnessText.textContent = `${source.label} · 更新于 ${formatter.format(generatedAt)}`;
   elements.freshness.classList.toggle("is-fresh", ageHours <= 36);
 }
 
 function updateNotice() {
-  if (demoMode) {
-    elements.notice.hidden = false;
-    elements.notice.textContent =
-      "当前为合成数据预览，不代表真实公司、预测或财报结果。";
+  const source = currentSource();
+  if (!source) {
+    elements.notice.hidden = true;
     return;
   }
-  if (state.feed.events.length === 0) {
+  if (source.message) {
     elements.notice.hidden = false;
-    elements.notice.textContent =
-      "公开数据源目前为空。yfinance 结果保留在个人暂存层；只有经过官方来源核验且允许公开的数据才会进入这里。";
+    elements.notice.textContent = source.message;
     return;
   }
   elements.notice.hidden = true;
@@ -201,9 +316,11 @@ function render() {
   elements.empty.hidden = !empty;
   elements.tableScroll.hidden = empty;
   elements.resultCount.textContent = `${events.length} event${events.length === 1 ? "" : "s"}`;
-  elements.emptyCopy.textContent =
-    state.feed.events.length === 0 && !demoMode
-      ? "生产 feed 尚未加入经过核验并允许公开的数据。"
+  const source = currentSource();
+  elements.emptyCopy.textContent = source?.status !== "READY"
+    ? source?.message || "当前数据源不可用。"
+    : state.feed.events.length === 0
+      ? "当前数据源没有可显示的财报事件。"
       : "调整日期、市场或搜索条件。";
 }
 
@@ -264,7 +381,8 @@ function timeCell(event) {
   const cell = document.createElement("td");
   cell.className = "time-cell";
   if (event.dateOnly) {
-    cell.textContent = "TBD";
+    cell.textContent = "—";
+    cell.title = "日期已知，具体发布时间待确认";
     return cell;
   }
   cell.textContent = new Intl.DateTimeFormat("en-GB", {
@@ -326,6 +444,12 @@ function formatMetric(value, type, currency = "USD") {
       maximumFractionDigits: 2,
     }).format(value);
   }
+  if (!currency || currency === "XXX") {
+    return new Intl.NumberFormat("en-US", {
+      notation: "compact",
+      maximumFractionDigits: value >= 1_000_000_000 ? 2 : 1,
+    }).format(value);
+  }
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: currency || "USD",
@@ -341,9 +465,9 @@ function sessionLabel(session) {
     DURING_MARKET: "Market hours",
     TAS: "Time supplied",
     TNS: "Time not supplied",
-    UNKNOWN: "Time TBD",
+    UNKNOWN: "时间待确认",
   };
-  return labels[session] || "Time TBD";
+  return labels[session] || "时间待确认";
 }
 
 function dateHeadingRow(key, timezone) {
@@ -369,9 +493,14 @@ function formatDateHeading(key, timezone) {
 }
 
 function openDetails(event) {
+  const source = currentSource();
   elements.dialogContent.replaceChildren();
   elements.dialogContent.append(
-    element("p", "dialog-kicker", `${event.market === "US" ? "🇺🇸" : "🇭🇰"} ${event.ticker} · ${event.timeStatus}`),
+    element(
+      "p",
+      "dialog-kicker",
+      `${event.market === "US" ? "🇺🇸" : "🇭🇰"} ${event.ticker} · ${source?.label || "Source"} · ${event.timeStatus}`,
+    ),
     element("h2", "dialog-title", event.company, { id: "dialog-title" }),
     element(
       "p",
@@ -398,10 +527,10 @@ function openDetails(event) {
   timesSection.append(element("h3", "", "Event time"));
   const times = document.createElement("dl");
   times.className = "detail-grid";
-  addDetail(times, `Original · ${event.originalTimezone}`, formatTimestamp(event.scheduledAt, event.originalTimezone, event.dateOnly));
-  addDetail(times, "UTC", formatTimestamp(event.times?.utc, "UTC", event.dateOnly));
-  addDetail(times, "New York", formatTimestamp(event.times?.newYork, "America/New_York", event.dateOnly));
-  addDetail(times, "Hong Kong", formatTimestamp(event.times?.hongKong, "Asia/Hong_Kong", event.dateOnly));
+  addDetail(times, `Original · ${event.originalTimezone}`, eventTimeValue(event, event.originalTimezone));
+  addDetail(times, "UTC", eventTimeValue(event, "UTC"));
+  addDetail(times, "New York", eventTimeValue(event, "America/New_York"));
+  addDetail(times, "Hong Kong", eventTimeValue(event, "Asia/Hong_Kong"));
   timesSection.append(times);
   elements.dialogContent.append(timesSection);
 
@@ -421,9 +550,9 @@ function openDetails(event) {
   const note = element(
     "p",
     "dialog-note",
-    event.dataStatus === "PUBLIC_REVIEWED"
-      ? "该记录已进入公开审核层。事件是否发生以原始官方来源为准，不根据价格行为反推。"
-      : "这是合成预览记录。真实事件必须核验原始来源、原始时区，并写入受治理事件日历。",
+    event.dataStatus === "SYNTHETIC"
+      ? "这是合成预览记录，不代表真实财报事件。"
+      : `${source?.label || "当前数据源"} 提供的是独立快照；事件日期、具体时间和是否已经发布仍以发行人、SEC 或 HKEX 原始来源为准，不根据价格行为反推。`,
   );
   elements.dialogContent.append(note);
   elements.dialog.showModal();
@@ -454,6 +583,24 @@ function formatTimestamp(value, timezone, dateOnly) {
     timeZone: timezone,
     timeZoneName: dateOnly ? undefined : "short",
   }).format(new Date(value));
+}
+
+function eventTimeValue(event, timezone) {
+  if (!event.dateOnly) {
+    const field =
+      timezone === "UTC"
+        ? event.times?.utc
+        : timezone === "America/New_York"
+          ? event.times?.newYork
+          : timezone === "Asia/Hong_Kong"
+            ? event.times?.hongKong
+            : event.scheduledAt;
+    return formatTimestamp(field, timezone, false);
+  }
+  if (timezone === event.originalTimezone) {
+    return `${formatTimestamp(event.scheduledAt, timezone, true)} · 时间待确认`;
+  }
+  return "REVIEW_REQUIRED · 无法精确换算";
 }
 
 function safeLink(url, label) {
