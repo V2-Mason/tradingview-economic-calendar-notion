@@ -25,6 +25,20 @@
       </header>
 
       <section class="controls" aria-label="财报日历筛选">
+        <div class="source-switcher">
+          <span class="source-label">Data source</span>
+          <div class="source-tabs" role="tablist" aria-label="数据源">
+            <button type="button" class="source-tab" data-source="moomoo" role="tab">
+              <span>Moomoo</span>
+              <span class="source-status" data-source-status="moomoo">检查中</span>
+            </button>
+            <button type="button" class="source-tab" data-source="yahoo" role="tab">
+              <span>Yahoo</span>
+              <span class="source-status" data-source-status="yahoo">检查中</span>
+            </button>
+          </div>
+        </div>
+
         <div class="range-tabs" role="tablist" aria-label="日期范围">
           <button type="button" class="range-tab" data-range="recent" role="tab">Recent</button>
           <button type="button" class="range-tab" data-range="today" role="tab">Today</button>
@@ -91,10 +105,10 @@
     </main>
 
     <dialog id="event-dialog" aria-labelledby="dialog-title">
-      <form method="dialog" class="dialog-shell">
-        <button class="dialog-close" value="close" aria-label="关闭">×</button>
+      <div class="dialog-shell">
+        <button type="button" class="dialog-close" id="dialog-close" aria-label="关闭">×</button>
         <div id="dialog-content"></div>
-      </form>
+      </div>
     </dialog>
 
     <script src="app.js" defer></script>

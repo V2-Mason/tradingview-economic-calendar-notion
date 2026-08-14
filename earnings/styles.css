@@ -141,6 +141,70 @@ h1 {
   box-shadow: var(--shadow);
 }
 
+.source-switcher {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.source-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.source-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.source-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--panel-subtle);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.source-tab:hover,
+.source-tab:focus-visible {
+  border-color: var(--accent);
+  outline: 0;
+}
+
+.source-tab.is-active {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.source-status {
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--positive) 13%, transparent);
+  color: var(--positive);
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.source-tab[data-status="NOT_CONNECTED"] .source-status,
+.source-tab[data-status="NO_DATA"] .source-status,
+.source-tab[data-status="ERROR"] .source-status {
+  background: color-mix(in srgb, var(--warning) 14%, transparent);
+  color: var(--warning);
+}
+
 .range-tabs {
   display: flex;
   gap: 2px;
@@ -635,6 +699,12 @@ body.compact h1 {
   }
 
   .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .source-switcher {
     align-items: flex-start;
     flex-direction: column;
     gap: 7px;
