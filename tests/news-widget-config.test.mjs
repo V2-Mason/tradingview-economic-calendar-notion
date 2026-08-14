@@ -59,7 +59,27 @@ test("encodes configuration in a URL fragment", () => {
   const parsed = new URL(url);
   assert.equal(parsed.search, "");
   assert.match(parsed.hash, /^#config=/);
+  const params = new URLSearchParams(parsed.hash.slice(1));
+  const decoded = JSON.parse(Buffer.from(params.get("config"), "base64url").toString("utf8"));
+  assert.equal(decoded.v, 2);
+  assert.deepEqual(decoded.s, [["NASDAQ:NVDA", "NVDA | NVIDIA"]]);
+  assert.deepEqual(decoded.p, [["us", "US 关注", [0]]]);
   assert.equal(widgetUrlMatches(url, url), true);
+});
+
+test("stores a repeated company once across multiple pools", () => {
+  const symbol = { proName: "NASDAQ:NVDA", label: "NVDA | NVIDIA" };
+  const url = buildNewsWidgetUrl({
+    baseUrl: "https://example.test/news/",
+    pools: [
+      { id: "us", label: "US 关注", symbols: [symbol] },
+      { id: "candidates", label: "研究候选", symbols: [symbol] },
+    ],
+  });
+  const config = new URLSearchParams(new URL(url).hash.slice(1)).get("config");
+  const decoded = JSON.parse(Buffer.from(config, "base64url").toString("utf8"));
+  assert.equal(decoded.s.length, 1);
+  assert.deepEqual(decoded.p.map((pool) => pool[2]), [[0], [0]]);
 });
 
 test("validates the minimal editable Notion schema", () => {

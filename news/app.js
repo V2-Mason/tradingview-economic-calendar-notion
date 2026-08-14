@@ -53,10 +53,37 @@ function parseEncodedConfig(encoded) {
     const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
     const bytes = Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
     const document = JSON.parse(new TextDecoder().decode(bytes));
+    if (document?.v === 2) {
+      return normalizeCompactPools(document);
+    }
     return normalizePools(document?.pools);
   } catch {
     return [];
   }
+}
+
+function normalizeCompactPools(document) {
+  if (!Array.isArray(document?.s) || !Array.isArray(document?.p)) {
+    return [];
+  }
+  const catalog = document.s.map((entry) => ({
+    proName: Array.isArray(entry) ? entry[0] : "",
+    label: Array.isArray(entry) ? entry[1] : "",
+  }));
+  const rawPools = document.p.map((entry) => {
+    if (!Array.isArray(entry)) {
+      return null;
+    }
+    const indexes = Array.isArray(entry[2]) ? entry[2] : [];
+    return {
+      id: entry[0],
+      label: entry[1],
+      symbols: indexes
+        .filter((index) => Number.isInteger(index) && index >= 0 && index < catalog.length)
+        .map((index) => catalog[index]),
+    };
+  });
+  return normalizePools(rawPools);
 }
 
 function normalizePools(rawPools) {
