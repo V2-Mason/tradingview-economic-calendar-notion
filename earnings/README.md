@@ -63,9 +63,20 @@ them.
 
 ## Local yfinance staging
 
-The collector is for personal research and does not make Yahoo an official or
-governed event source. It deliberately refuses any output path under
-`earnings/data/`.
+The versioned zero-dependency Yahoo collector is the default local automation
+path. It is for personal research and does not make Yahoo an official or
+governed event source:
+
+```powershell
+node scripts/fetch_yahoo_quote_summary.mjs
+```
+
+It writes `.private/yahoo-earnings-staging.json` atomically and refuses input or
+output paths outside `.private/`.
+
+The yfinance collector remains an optional fallback. It also deliberately
+refuses any output path under `earnings/data/` and now uses the same default
+`.private/yahoo-earnings-staging.json` filename consumed by the private builder.
 
 On Windows:
 
@@ -77,7 +88,7 @@ py -m venv .private/.venv
 .private/.venv/Scripts/python.exe scripts/fetch_yfinance_earnings.py
 ```
 
-The default result is `.private/yfinance-earnings-staging.json`. It contains
+The default result is `.private/yahoo-earnings-staging.json`. It contains
 `UNVERIFIED_SECONDARY`, `PERSONAL_USE_ONLY`, and
 `publicReleaseApproved=false` markers.
 
@@ -118,8 +129,58 @@ Presentation data never becomes canonical investment-workbench state.
 After refreshing either provider, build the self-contained attachment:
 
 ```powershell
-node .private/build_notion_earnings.mjs
+node scripts/build_notion_earnings.mjs
 ```
 
 If Moomoo is unavailable, its tab remains visible with an explicit `未连接`
 state; the interface never falls back to Yahoo without the user selecting it.
+
+The builder applies a freshness limit, marks retained old snapshots `STALE`,
+marks partial collections `PARTIAL`, embeds all CSS, JavaScript, and data, and
+rejects external script or stylesheet dependencies. Generic collector and
+builder logic is versioned under `scripts/`; the watchlist, snapshots, logs,
+generated HTML, and Notion configuration remain under ignored `.private/`.
+
+## Local automatic update
+
+Preview the complete workflow without network access, file writes, mutex
+acquisition, Scheduled Task changes, or Notion writes:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File scripts/update_private_earnings.ps1 -DryRun
+```
+
+Run the local-only update explicitly:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File scripts/update_private_earnings.ps1
+```
+
+The updater uses a named mutex, checks loopback OpenD, collects Moomoo, Yahoo,
+and company news independently, validates fresh candidate snapshots, and only
+then atomically replaces each last-known-good file. The earnings HTML is built
+to a temporary path, checked for its embedded catalog/offline CSP, and atomically
+published. Failures leave the prior snapshot or HTML in place. Logs are written
+to `.private/logs/`.
+
+Notion is an explicit external-write boundary. `-PublishNotion` runs configured
+Notion sync commands only after local collection and build succeed; omitting the
+switch never writes to Notion. `-DryRun -PublishNotion` only reports the proposed
+publish and still performs no external write.
+
+The Windows PowerShell 5.1 installer can be inspected without registering a
+task:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File scripts/install_windows_task.ps1 -WhatIf
+```
+
+The fixed `Trader Master Journal Market Intelligence Sync` task uses the
+current user's `InteractiveToken` without a
+stored credential, triggers at logon and every two hours, ignores overlapping
+runs, starts when available, and invokes the updater with `-PublishNotion`.
+Registration and removal remain explicit operations; the repository does not
+register a task merely by running validation.

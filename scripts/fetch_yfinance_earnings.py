@@ -25,7 +25,7 @@ import yfinance as yf
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_WATCHLIST = ROOT / ".private" / "watchlist.json"
-DEFAULT_OUTPUT = ROOT / ".private" / "yfinance-earnings-staging.json"
+DEFAULT_OUTPUT = ROOT / ".private" / "yahoo-earnings-staging.json"
 PUBLIC_DATA_DIR = (ROOT / "earnings" / "data").resolve()
 MARKET_TIMEZONES = {"US": "America/New_York", "HK": "Asia/Hong_Kong"}
 MARKET_CURRENCIES = {"US": "USD", "HK": "HKD"}

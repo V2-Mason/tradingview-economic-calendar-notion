@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-14T20:05:00Z",
+  "events": [
+    {
+      "id": "shared-event",
+      "market": "HK",
+      "ticker": "9999.HK",
+      "company": "Example Cloud",
+      "eventName": "Earnings announcement",
+      "scheduledAt": "2026-08-21T16:10:00+08:00",
+      "originalTimezone": "Asia/Hong_Kong",
+      "dateOnly": true,
+      "timeStatus": "ESTIMATED",
+      "session": "UNKNOWN",
+      "releaseState": "UPCOMING",
+      "times": {
+        "utc": "2026-08-21T08:10:00Z",
+        "newYork": "2026-08-21T04:10:00-04:00",
+        "hongKong": "2026-08-21T16:10:00+08:00"
+      },
+      "eps": {
+        "actual": null,
+        "consensus": 0.25,
+        "ownForecast": null,
+        "currency": "HKD"
+      },
+      "revenue": {
+        "actual": null,
+        "consensus": null,
+        "ownForecast": null,
+        "currency": "HKD"
+      },
+      "marketCap": {
+        "value": null,
+        "currency": "HKD",
+        "asOf": "2026-08-14T20:05:00Z"
+      },
+      "sources": [
+        {
+          "name": "Yahoo Finance quoteSummary",
+          "kind": "UNVERIFIED_SECONDARY",
+          "url": "https://finance.yahoo.com/quote/9999.HK/calendar/",
+          "fetchedAt": "2026-08-14T20:05:00Z"
+        }
+      ],
+      "dataStatus": "UNVERIFIED_SECONDARY"
+    }
+  ]
+}

@@ -44,6 +44,7 @@ const requestedMarkets = (params.get("markets") || "US,HK")
   .filter((market) => ["US", "HK"].includes(market));
 const requestedTimezone = params.get("timezone");
 const validSources = new Set(["moomoo", "yahoo"]);
+const freshSourceStatuses = new Set(["READY", "PARTIAL", "NO_DATA"]);
 const requestedSource = (params.get("source") || "").toLocaleLowerCase();
 
 const state = {
@@ -221,10 +222,11 @@ function sourceStatusLabel(entry) {
     NOT_CONNECTED: "未连接",
     NO_DATA: "无数据",
     ERROR: "错误",
+    STALE: "已过期",
   };
-  return entry.status === "READY"
-    ? `${entry.feed.events.length} 条`
-    : labels[entry.status] || entry.status;
+  if (entry.status === "READY") return `${entry.feed.events.length} 条`;
+  if (entry.status === "PARTIAL") return `${entry.feed.events.length} 条 · 部分`;
+  return labels[entry.status] || entry.status;
 }
 
 function assertFeed(feed) {
@@ -247,7 +249,7 @@ function assertFeed(feed) {
 function updateFreshness() {
   const source = currentSource();
   elements.freshness.classList.remove("is-fresh");
-  if (!source || source.status !== "READY") {
+  if (!source || !freshSourceStatuses.has(source.status)) {
     elements.freshnessText.textContent = source
       ? `${source.label} · ${sourceStatusLabel(source)}`
       : "暂无数据源";
@@ -317,7 +319,7 @@ function render() {
   elements.tableScroll.hidden = empty;
   elements.resultCount.textContent = `${events.length} event${events.length === 1 ? "" : "s"}`;
   const source = currentSource();
-  elements.emptyCopy.textContent = source?.status !== "READY"
+  elements.emptyCopy.textContent = !freshSourceStatuses.has(source?.status)
     ? source?.message || "当前数据源不可用。"
     : state.feed.events.length === 0
       ? "当前数据源没有可显示的财报事件。"
