@@ -66,7 +66,8 @@ const appChecks = [
 
 const stagingChecks = [
   ["imports yfinance", /import yfinance as yf/],
-  ["ticker earnings dates", /get_earnings_dates/],
+  ["ticker-scoped earnings calendar", /ticker\.get_calendar/],
+  ["ambiguous HTML ownership guard", /cannot safely prove row ownership/],
   ["ticker revenue estimate", /get_revenue_estimate/],
   ["private staging policy", /YFINANCE_PERSONAL_STAGING_ONLY/],
   ["personal-use marker", /PERSONAL_USE_ONLY/],
@@ -75,6 +76,10 @@ const stagingChecks = [
   ["New York materialization", /ZoneInfo\("America\/New_York"\)/],
   ["Hong Kong materialization", /ZoneInfo\("Asia\/Hong_Kong"\)/],
 ];
+
+if (/get_earnings_dates\s*\(/.test(yfinanceScript)) {
+  fail("yfinance staging must not consume the ambiguous Yahoo earnings HTML table");
+}
 
 for (const [group, source, checks] of [
   ["root", rootHtml, rootChecks],

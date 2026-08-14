@@ -115,20 +115,6 @@ def iso_z(value: datetime) -> str:
     return value.astimezone(UTC).isoformat().replace("+00:00", "Z")
 
 
-def normalize_session(value: Any) -> str:
-    raw = (text_value(value) or "").upper().replace(" ", "_")
-    aliases = {
-        "BMO": "BMO",
-        "BEFORE_MARKET_OPEN": "BMO",
-        "AMC": "AMC",
-        "AFTER_MARKET_CLOSE": "AMC",
-        "TAS": "TAS",
-        "TNS": "TNS",
-        "DURING_MARKET_HOURS": "DURING_MARKET",
-    }
-    return aliases.get(raw, "UNKNOWN")
-
-
 def read_watchlist(path: Path) -> list[dict[str, Any]]:
     if not path.is_file():
         raise SystemExit(
@@ -151,15 +137,6 @@ def read_watchlist(path: Path) -> list[dict[str, Any]]:
             raise SystemExit(f"HK ticker must use Yahoo's .HK suffix: {ticker}")
         normalized.append({**item, "ticker": ticker.upper(), "market": market})
     return normalized
-
-
-def dataframe_rows(frame: Any) -> list[tuple[Any, Any]]:
-    if frame is None or getattr(frame, "empty", True):
-        return []
-    try:
-        return list(frame.iterrows())
-    except (AttributeError, TypeError):
-        return []
 
 
 def calendar_dates(calendar: Any) -> list[Any]:
@@ -201,9 +178,6 @@ def collect_ticker(
     info = safe_call("get_info", ticker.get_info, errors) or {}
     fast_info = safe_call("fast_info", lambda: ticker.fast_info, errors) or {}
     calendar = safe_call("get_calendar", ticker.get_calendar, errors) or {}
-    earnings_dates = safe_call(
-        "get_earnings_dates", lambda: ticker.get_earnings_dates(limit=24), errors
-    )
     revenue_estimates = safe_call(
         "get_revenue_estimate", ticker.get_revenue_estimate, errors
     )
@@ -214,45 +188,34 @@ def collect_ticker(
         or text_value(safe_get(info, "longName"))
         or ticker_code
     )
-    currency = (
+    market_currency = (
         text_value(safe_get(info, "currency"))
         or text_value(safe_get(fast_info, "currency"))
         or MARKET_CURRENCIES[market]
     )
+    metric_currency = text_value(safe_get(info, "financialCurrency")) or "XXX"
     market_cap = finite_number(safe_get(fast_info, "market_cap"))
     if market_cap is None:
         market_cap = finite_number(safe_get(info, "marketCap"))
 
-    rows = dataframe_rows(earnings_dates)
-    if not rows:
-        rows = [(candidate, {}) for candidate in calendar_dates(calendar)]
+    # Yahoo's ticker-filtered earnings HTML has been observed returning unrelated
+    # symbols even when `symbol=` is present. yfinance drops the Symbol column
+    # after scraping, so downstream code cannot safely prove row ownership.
+    # Use the ticker-scoped quoteSummary calendar instead; it provides the next
+    # date and consensus fields but not a governed exact release time or safely
+    # aligned historical actuals.
+    rows = [(candidate, {}) for candidate in calendar_dates(calendar)]
 
     raw_events: list[dict[str, Any]] = []
-    for raw_date, row in rows:
-        scheduled, date_only = as_datetime(raw_date, timezone_name)
+    for raw_date, _row in rows:
+        scheduled, _date_only = as_datetime(raw_date, timezone_name)
         if scheduled is None:
             continue
         scheduled_utc = scheduled.astimezone(UTC)
         if scheduled_utc < window_start or scheduled_utc > window_end:
             continue
         local = scheduled.astimezone(ZoneInfo(timezone_name))
-        timing = (
-            safe_get(row, "Timing")
-            or safe_get(row, "Earnings Call Time")
-            or safe_get(row, "Event Start Date Type")
-        )
-        eps_consensus = finite_number(safe_get(row, "EPS Estimate"))
-        eps_actual = finite_number(safe_get(row, "Reported EPS"))
-        surprise = finite_number(
-            safe_get(row, "Surprise(%)", safe_get(row, "Surprise (%)"))
-        )
-        row_market_cap = finite_number(
-            safe_get(row, "Marketcap", safe_get(row, "Market Cap"))
-        )
-        event_name = (
-            text_value(safe_get(row, "Event Name"))
-            or f"{company} earnings announcement"
-        )
+        event_name = f"{company} earnings announcement"
         raw_events.append(
             {
                 "id": event_identifier(market, ticker_code, local),
@@ -263,14 +226,10 @@ def collect_ticker(
                 "fiscalPeriod": None,
                 "scheduledAt": local.isoformat(),
                 "originalTimezone": timezone_name,
-                "dateOnly": date_only,
+                "dateOnly": True,
                 "timeStatus": "ESTIMATED",
-                "session": normalize_session(timing),
-                "releaseState": (
-                    "REPORTED_BY_SECONDARY_SOURCE"
-                    if eps_actual is not None
-                    else "UPCOMING"
-                ),
+                "session": "UNKNOWN",
+                "releaseState": "UPCOMING",
                 "times": {
                     "utc": iso_z(local),
                     "newYork": local.astimezone(
@@ -281,21 +240,21 @@ def collect_ticker(
                     ).isoformat(),
                 },
                 "eps": {
-                    "actual": eps_actual,
-                    "consensus": eps_consensus,
+                    "actual": None,
+                    "consensus": None,
                     "ownForecast": None,
-                    "currency": currency,
-                    "surprisePercent": surprise,
+                    "currency": metric_currency,
+                    "surprisePercent": None,
                 },
                 "revenue": {
                     "actual": None,
                     "consensus": None,
                     "ownForecast": None,
-                    "currency": currency,
+                    "currency": metric_currency,
                 },
                 "marketCap": {
-                    "value": row_market_cap or market_cap,
-                    "currency": currency,
+                    "value": market_cap if market_cap and market_cap > 0 else None,
+                    "currency": market_currency,
                     "asOf": iso_z(collected_at),
                 },
                 "sources": [
@@ -333,14 +292,14 @@ def collect_ticker(
         nearest["revenue"]["consensus"] = revenue_consensus
         own_forecast = item.get("ownForecast")
         if isinstance(own_forecast, dict):
-            nearest["eps"]["ownForecast"] = finite_number(
-                own_forecast.get("eps")
-            )
-            nearest["revenue"]["ownForecast"] = finite_number(
-                own_forecast.get("revenue")
-            )
+            own_eps = finite_number(own_forecast.get("eps"))
+            own_revenue = finite_number(own_forecast.get("revenue"))
+            nearest["eps"]["ownForecast"] = own_eps
+            nearest["revenue"]["ownForecast"] = own_revenue
             forecast_currency = text_value(own_forecast.get("currency"))
-            if forecast_currency:
+            if forecast_currency and (
+                own_eps is not None or own_revenue is not None
+            ):
                 nearest["eps"]["currency"] = forecast_currency
                 nearest["revenue"]["currency"] = forecast_currency
 
@@ -387,6 +346,10 @@ def main() -> int:
         "collectionErrors": collection_errors,
         "limitations": [
             "Yahoo Finance via yfinance is an unverified secondary source.",
+            "Only ticker-scoped quoteSummary calendar data is used; the Yahoo "
+            "earnings HTML table is not trusted for ticker ownership.",
+            "The returned date is treated as date-only and BMO/AMC remains "
+            "unknown.",
             "Revenue actuals are not auto-aligned to an earnings event.",
             "Event occurrence and exact time require issuer/exchange/regulator verification.",
             "This file is personal-use staging data and is not approved for public Pages.",

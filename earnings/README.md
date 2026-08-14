@@ -71,9 +71,17 @@ user's real watchlist.
 ## Why staging cannot be published automatically
 
 `yfinance` is an unofficial wrapper and states that Yahoo Finance data is for
-personal use. It can supply earnings dates, EPS estimate/actual, market cap, and
-often the next-quarter revenue estimate. It cannot reliably align a reported
-revenue figure to every event, especially across Hong Kong disclosure formats.
+personal use. This collector uses only the ticker-scoped quote-summary calendar
+for the next earnings date, EPS/revenue estimates, and market cap. It does not
+trust the Yahoo earnings HTML table for ticker ownership, because the live page
+has been observed ignoring its `symbol=` filter. Historical EPS/revenue actuals
+therefore remain null until they are aligned and verified from an official
+filing or results release.
+
+The Yahoo date is treated as date-only. BMO/AMC remains `UNKNOWN` until issuer
+IR, SEC, or HKEX confirms the release time. Estimate currency comes from the
+issuer's reported financial currency when Yahoo supplies it; trading currency
+is used only for market cap.
 
 Before an event enters `events.json`:
 
