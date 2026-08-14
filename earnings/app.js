@@ -530,4 +530,3 @@ function addDays(key, amount) {
   date.setUTCDate(date.getUTCDate() + amount);
   return date.toISOString().slice(0, 10);
 }
-
