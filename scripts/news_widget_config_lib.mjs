@@ -98,8 +98,21 @@ export function buildNewsWidgetUrl({ baseUrl, pools, locale = "en" }) {
   if (url.protocol !== "https:") {
     throw new Error("news widget baseUrl must use HTTPS");
   }
+  const symbolIndex = new Map();
+  const symbols = [];
+  const compactPools = pools.map((pool) => [
+    pool.id,
+    pool.label,
+    pool.symbols.map((symbol) => {
+      if (!symbolIndex.has(symbol.proName)) {
+        symbolIndex.set(symbol.proName, symbols.length);
+        symbols.push([symbol.proName, symbol.label]);
+      }
+      return symbolIndex.get(symbol.proName);
+    }),
+  ]);
   const encoded = Buffer.from(
-    JSON.stringify({ version: 1, pools }),
+    JSON.stringify({ v: 2, s: symbols, p: compactPools }),
     "utf8",
   ).toString("base64url");
   const firstPool = pools[0];
