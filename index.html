@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>US Economic Calendar</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page-bg: transparent;
+        --fallback-text: #6b7280;
+        --fallback-link: #2962ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        min-width: 280px;
+        min-height: 520px;
+        margin: 0;
+        overflow: hidden;
+        background: var(--page-bg);
+      }
+
+      body {
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      #calendar-widget,
+      .tradingview-widget-container,
+      .tradingview-widget-container__widget {
+        width: 100%;
+        min-height: 500px;
+      }
+
+      .tradingview-widget-container {
+        position: relative;
+      }
+
+      .tradingview-widget-copyright {
+        min-height: 20px;
+        padding: 4px 8px 0;
+        color: var(--fallback-text);
+        font-size: 12px;
+        line-height: 16px;
+        text-align: center;
+      }
+
+      .tradingview-widget-copyright a {
+        color: var(--fallback-link);
+        text-decoration: none;
+      }
+
+      .fallback {
+        display: grid;
+        min-height: 500px;
+        place-items: center;
+        padding: 24px;
+        color: var(--fallback-text);
+        text-align: center;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --fallback-text: #9ca3af;
+          --fallback-link: #5b8def;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="calendar-widget" aria-label="TradingView 美国经济事件日历">
+      <div class="fallback">正在载入经济事件……</div>
+    </main>
+
+    <noscript>
+      <p class="fallback">
+        此日历需要 JavaScript。请直接访问
+        <a href="https://www.tradingview.com/economic-calendar/">TradingView Economic Calendar</a>。
+      </p>
+    </noscript>
+
+    <script>
+      (() => {
+        "use strict";
+
+        const params = new URLSearchParams(window.location.search);
+        const themeParam = params.get("theme") || "auto";
+        const locale = params.get("locale") || "en";
+        const countryFilter = params.get("countries") || "us";
+        const importanceModes = {
+          high: "1",
+          "medium-high": "0,1",
+          all: "-1,0,1",
+        };
+        const importanceFilter =
+          importanceModes[params.get("importance") || "high"] || "1";
+        const darkMode = window.matchMedia("(prefers-color-scheme: dark)");
+        const host = document.getElementById("calendar-widget");
+        let resizeTimer;
+
+        function selectedTheme() {
+          if (themeParam === "dark" || themeParam === "light") {
+            return themeParam;
+          }
+          return darkMode.matches ? "dark" : "light";
+        }
+
+        function widgetHeight() {
+          return Math.max(500, Math.min(1000, window.innerHeight - 20));
+        }
+
+        function renderWidget() {
+          const container = document.createElement("div");
+          container.className = "tradingview-widget-container";
+          container.innerHTML = [
+            '<div class="tradingview-widget-container__widget"></div>',
+            '<div class="tradingview-widget-copyright">',
+            '<a href="https://www.tradingview.com/economic-calendar/" ',
+            'rel="noopener nofollow" target="_blank">',
+            '<span>Economic Calendar</span></a>',
+            '<span> by TradingView</span>',
+            "</div>",
+          ].join("");
+
+          const script = document.createElement("script");
+          script.type = "text/javascript";
+          script.src =
+            "https://s3.tradingview.com/external-embedding/embed-widget-events.js";
+          script.async = true;
+          script.textContent = JSON.stringify({
+            colorTheme: selectedTheme(),
+            isTransparent: true,
+            locale,
+            countryFilter,
+            importanceFilter,
+            width: "100%",
+            height: widgetHeight(),
+          });
+
+          container.appendChild(script);
+          host.replaceChildren(container);
+        }
+
+        function scheduleRender() {
+          window.clearTimeout(resizeTimer);
+          resizeTimer = window.setTimeout(renderWidget, 180);
+        }
+
+        renderWidget();
+        window.addEventListener("resize", scheduleRender, { passive: true });
+        darkMode.addEventListener("change", () => {
+          if (themeParam === "auto") renderWidget();
+        });
+      })();
+    </script>
+  </body>
+</html>
