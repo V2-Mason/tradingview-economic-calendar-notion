@@ -1,0 +1,253 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-08-14T18:45:00Z",
+  "dataPolicy": "SYNTHETIC_DEMO_ONLY",
+  "events": [
+    {
+      "id": "DEMO-US-NCLOUD-2026Q2",
+      "market": "US",
+      "ticker": "NCLOUD",
+      "company": "Northstar Cloud Inc.",
+      "eventName": "Q2 2026 Earnings Announcement",
+      "fiscalPeriod": "Q2 2026",
+      "scheduledAt": "2026-08-13T16:05:00-04:00",
+      "originalTimezone": "America/New_York",
+      "dateOnly": false,
+      "timeStatus": "CONFIRMED",
+      "session": "AMC",
+      "releaseState": "VERIFIED_RELEASED",
+      "times": {
+        "utc": "2026-08-13T20:05:00Z",
+        "newYork": "2026-08-13T16:05:00-04:00",
+        "hongKong": "2026-08-14T04:05:00+08:00"
+      },
+      "eps": {
+        "actual": 2.14,
+        "consensus": 2.02,
+        "ownForecast": 2.08,
+        "currency": "USD",
+        "surprisePercent": 5.94
+      },
+      "revenue": {
+        "actual": 18420000000,
+        "consensus": 17900000000,
+        "ownForecast": 18100000000,
+        "currency": "USD"
+      },
+      "marketCap": {
+        "value": 210000000000,
+        "currency": "USD",
+        "asOf": "2026-08-13T20:00:00Z"
+      },
+      "sources": [
+        {
+          "name": "Synthetic issuer release",
+          "kind": "SYNTHETIC",
+          "url": "https://example.com/demo/ncloud-q2-2026",
+          "publishedAt": "2026-08-13T20:05:00Z",
+          "fetchedAt": "2026-08-14T18:45:00Z"
+        }
+      ],
+      "dataStatus": "SYNTHETIC",
+      "redistributionStatus": "SYNTHETIC",
+      "publicReleaseApproved": false
+    },
+    {
+      "id": "DEMO-US-VECTOR-2026Q2",
+      "market": "US",
+      "ticker": "VECTOR",
+      "company": "Vector AI Systems",
+      "eventName": "Q2 2026 Earnings Announcement",
+      "fiscalPeriod": "Q2 2026",
+      "scheduledAt": "2026-08-17T08:00:00-04:00",
+      "originalTimezone": "America/New_York",
+      "dateOnly": false,
+      "timeStatus": "CONFIRMED",
+      "session": "BMO",
+      "releaseState": "UPCOMING",
+      "times": {
+        "utc": "2026-08-17T12:00:00Z",
+        "newYork": "2026-08-17T08:00:00-04:00",
+        "hongKong": "2026-08-17T20:00:00+08:00"
+      },
+      "eps": {
+        "actual": null,
+        "consensus": 0.83,
+        "ownForecast": 0.88,
+        "currency": "USD",
+        "surprisePercent": null
+      },
+      "revenue": {
+        "actual": null,
+        "consensus": 3280000000,
+        "ownForecast": 3360000000,
+        "currency": "USD"
+      },
+      "marketCap": {
+        "value": 48700000000,
+        "currency": "USD",
+        "asOf": "2026-08-14T20:00:00Z"
+      },
+      "sources": [
+        {
+          "name": "Synthetic issuer calendar",
+          "kind": "SYNTHETIC",
+          "url": "https://example.com/demo/vector-q2-2026",
+          "publishedAt": "2026-08-03T12:00:00Z",
+          "fetchedAt": "2026-08-14T18:45:00Z"
+        }
+      ],
+      "dataStatus": "SYNTHETIC",
+      "redistributionStatus": "SYNTHETIC",
+      "publicReleaseApproved": false
+    },
+    {
+      "id": "DEMO-US-LUMEN-2026Q3",
+      "market": "US",
+      "ticker": "LUMENX",
+      "company": "Lumen Compute Labs",
+      "eventName": "Q3 2026 Earnings Announcement",
+      "fiscalPeriod": "Q3 2026",
+      "scheduledAt": "2026-08-18T16:15:00-04:00",
+      "originalTimezone": "America/New_York",
+      "dateOnly": false,
+      "timeStatus": "ESTIMATED",
+      "session": "AMC",
+      "releaseState": "UPCOMING",
+      "times": {
+        "utc": "2026-08-18T20:15:00Z",
+        "newYork": "2026-08-18T16:15:00-04:00",
+        "hongKong": "2026-08-19T04:15:00+08:00"
+      },
+      "eps": {
+        "actual": null,
+        "consensus": 1.16,
+        "ownForecast": null,
+        "currency": "USD",
+        "surprisePercent": null
+      },
+      "revenue": {
+        "actual": null,
+        "consensus": 9140000000,
+        "ownForecast": null,
+        "currency": "USD"
+      },
+      "marketCap": {
+        "value": 126300000000,
+        "currency": "USD",
+        "asOf": "2026-08-14T20:00:00Z"
+      },
+      "sources": [
+        {
+          "name": "Synthetic calendar source",
+          "kind": "SYNTHETIC",
+          "url": "https://example.com/demo/lumen-q3-2026",
+          "publishedAt": null,
+          "fetchedAt": "2026-08-14T18:45:00Z"
+        }
+      ],
+      "dataStatus": "SYNTHETIC",
+      "redistributionStatus": "SYNTHETIC",
+      "publicReleaseApproved": false
+    },
+    {
+      "id": "DEMO-HK-08888-2026H1",
+      "market": "HK",
+      "ticker": "08888.HK",
+      "company": "Harbour Optical Systems",
+      "eventName": "2026 Interim Results",
+      "fiscalPeriod": "H1 2026",
+      "scheduledAt": "2026-08-19T16:30:00+08:00",
+      "originalTimezone": "Asia/Hong_Kong",
+      "dateOnly": false,
+      "timeStatus": "CONFIRMED",
+      "session": "AMC",
+      "releaseState": "UPCOMING",
+      "times": {
+        "utc": "2026-08-19T08:30:00Z",
+        "newYork": "2026-08-19T04:30:00-04:00",
+        "hongKong": "2026-08-19T16:30:00+08:00"
+      },
+      "eps": {
+        "actual": null,
+        "consensus": 0.42,
+        "ownForecast": 0.45,
+        "currency": "HKD",
+        "surprisePercent": null
+      },
+      "revenue": {
+        "actual": null,
+        "consensus": 7650000000,
+        "ownForecast": 7900000000,
+        "currency": "HKD"
+      },
+      "marketCap": {
+        "value": 63400000000,
+        "currency": "HKD",
+        "asOf": "2026-08-14T08:00:00Z"
+      },
+      "sources": [
+        {
+          "name": "Synthetic HKEX announcement",
+          "kind": "SYNTHETIC",
+          "url": "https://example.com/demo/08888-h1-2026",
+          "publishedAt": "2026-08-05T10:00:00Z",
+          "fetchedAt": "2026-08-14T18:45:00Z"
+        }
+      ],
+      "dataStatus": "SYNTHETIC",
+      "redistributionStatus": "SYNTHETIC",
+      "publicReleaseApproved": false
+    },
+    {
+      "id": "DEMO-HK-09999-2026H1",
+      "market": "HK",
+      "ticker": "09999.HK",
+      "company": "Pacific Enterprise AI",
+      "eventName": "2026 Interim Results",
+      "fiscalPeriod": "H1 2026",
+      "scheduledAt": "2026-08-21T00:00:00+08:00",
+      "originalTimezone": "Asia/Hong_Kong",
+      "dateOnly": true,
+      "timeStatus": "TENTATIVE",
+      "session": "UNKNOWN",
+      "releaseState": "UPCOMING",
+      "times": {
+        "utc": "2026-08-20T16:00:00Z",
+        "newYork": "2026-08-20T12:00:00-04:00",
+        "hongKong": "2026-08-21T00:00:00+08:00"
+      },
+      "eps": {
+        "actual": null,
+        "consensus": null,
+        "ownForecast": null,
+        "currency": "HKD",
+        "surprisePercent": null
+      },
+      "revenue": {
+        "actual": null,
+        "consensus": 2180000000,
+        "ownForecast": null,
+        "currency": "HKD"
+      },
+      "marketCap": {
+        "value": 14800000000,
+        "currency": "HKD",
+        "asOf": "2026-08-14T08:00:00Z"
+      },
+      "sources": [
+        {
+          "name": "Synthetic calendar source",
+          "kind": "SYNTHETIC",
+          "url": "https://example.com/demo/09999-h1-2026",
+          "publishedAt": null,
+          "fetchedAt": "2026-08-14T18:45:00Z"
+        }
+      ],
+      "dataStatus": "SYNTHETIC",
+      "redistributionStatus": "SYNTHETIC",
+      "publicReleaseApproved": false
+    }
+  ]
+}
+

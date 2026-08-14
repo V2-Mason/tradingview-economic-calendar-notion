@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none';"
+    />
+    <title>US & HK Earnings Calendar</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="dashboard" aria-labelledby="page-title">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">INVESTMENT WORKBENCH</p>
+          <h1 id="page-title">Earnings Calendar</h1>
+        </div>
+        <div class="freshness" id="freshness" aria-live="polite">
+          <span class="freshness-dot"></span>
+          <span id="freshness-text">正在读取数据</span>
+        </div>
+      </header>
+
+      <section class="controls" aria-label="财报日历筛选">
+        <div class="range-tabs" role="tablist" aria-label="日期范围">
+          <button type="button" class="range-tab" data-range="recent" role="tab">Recent</button>
+          <button type="button" class="range-tab" data-range="today" role="tab">Today</button>
+          <button type="button" class="range-tab" data-range="tomorrow" role="tab">Tomorrow</button>
+          <button type="button" class="range-tab" data-range="this-week" role="tab">This Week</button>
+          <button type="button" class="range-tab is-active" data-range="next-week" role="tab" aria-selected="true">Next Week</button>
+          <button type="button" class="range-tab" data-range="this-month" role="tab">This Month</button>
+        </div>
+
+        <div class="filter-row">
+          <div class="market-filter" aria-label="市场筛选">
+            <label><input type="checkbox" name="market" value="US" checked /> 🇺🇸 US</label>
+            <label><input type="checkbox" name="market" value="HK" checked /> 🇭🇰 HK</label>
+          </div>
+          <label class="select-control">
+            <span>时区</span>
+            <select id="timezone-select">
+              <option value="America/New_York">New York</option>
+              <option value="Asia/Hong_Kong">Hong Kong</option>
+            </select>
+          </label>
+          <label class="search-control">
+            <span class="sr-only">搜索公司或代码</span>
+            <input id="search-input" type="search" placeholder="搜索公司 / 代码" autocomplete="off" />
+          </label>
+        </div>
+      </section>
+
+      <aside class="notice" id="notice" hidden></aside>
+
+      <section class="table-card" aria-label="财报事件">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th rowspan="2" scope="col" class="time-column">Time</th>
+                <th rowspan="2" scope="col" class="event-column">Company / Event</th>
+                <th colspan="2" scope="colgroup">EPS</th>
+                <th colspan="2" scope="colgroup">Revenue</th>
+                <th rowspan="2" scope="col">Market Cap</th>
+                <th rowspan="2" scope="col">Released</th>
+              </tr>
+              <tr>
+                <th scope="col">Actual</th>
+                <th scope="col">Forecast</th>
+                <th scope="col">Actual</th>
+                <th scope="col">Forecast</th>
+              </tr>
+            </thead>
+            <tbody id="event-rows"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="empty-state" hidden>
+          <div class="empty-icon">◌</div>
+          <h2>这个范围内没有事件</h2>
+          <p id="empty-copy">调整日期或市场筛选。</p>
+        </div>
+      </section>
+
+      <footer>
+        <span id="result-count">0 events</span>
+        <span>只显示 US / HK · 不包含仓位和账户数据</span>
+      </footer>
+    </main>
+
+    <dialog id="event-dialog" aria-labelledby="dialog-title">
+      <form method="dialog" class="dialog-shell">
+        <button class="dialog-close" value="close" aria-label="关闭">×</button>
+        <div id="dialog-content"></div>
+      </form>
+    </dialog>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

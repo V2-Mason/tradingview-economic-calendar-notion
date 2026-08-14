@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://v2-mason.github.io/tradingview-economic-calendar-notion/earnings/public-feed.schema.json",
+  "title": "Public reviewed earnings dashboard feed",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generatedAt", "dataPolicy", "events"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "generatedAt": { "type": ["string", "null"], "format": "date-time" },
+    "dataPolicy": { "enum": ["PUBLIC_REVIEWED_ONLY", "SYNTHETIC_DEMO_ONLY"] },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/event" }
+    }
+  },
+  "$defs": {
+    "nullableNumber": { "type": ["number", "null"] },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["actual", "consensus", "ownForecast", "currency"],
+      "properties": {
+        "actual": { "$ref": "#/$defs/nullableNumber" },
+        "consensus": { "$ref": "#/$defs/nullableNumber" },
+        "ownForecast": { "$ref": "#/$defs/nullableNumber" },
+        "currency": { "type": "string", "minLength": 3, "maxLength": 8 },
+        "surprisePercent": { "$ref": "#/$defs/nullableNumber" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "kind", "url"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "kind": {
+          "enum": [
+            "OFFICIAL_ISSUER",
+            "OFFICIAL_EXCHANGE",
+            "OFFICIAL_REGULATOR",
+            "LICENSED_PROVIDER",
+            "USER_OWNED_FORECAST",
+            "SYNTHETIC"
+          ]
+        },
+        "url": { "type": "string", "format": "uri" },
+        "publishedAt": { "type": ["string", "null"], "format": "date-time" },
+        "fetchedAt": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "market",
+        "ticker",
+        "company",
+        "eventName",
+        "fiscalPeriod",
+        "scheduledAt",
+        "originalTimezone",
+        "dateOnly",
+        "timeStatus",
+        "session",
+        "releaseState",
+        "times",
+        "eps",
+        "revenue",
+        "marketCap",
+        "sources",
+        "dataStatus",
+        "redistributionStatus",
+        "publicReleaseApproved"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "market": { "enum": ["US", "HK"] },
+        "ticker": { "type": "string", "minLength": 1 },
+        "company": { "type": "string", "minLength": 1 },
+        "eventName": { "type": "string", "minLength": 1 },
+        "fiscalPeriod": { "type": ["string", "null"] },
+        "scheduledAt": { "type": "string", "format": "date-time" },
+        "originalTimezone": { "enum": ["America/New_York", "Asia/Hong_Kong"] },
+        "dateOnly": { "type": "boolean" },
+        "timeStatus": { "enum": ["CONFIRMED", "ESTIMATED", "TENTATIVE"] },
+        "session": { "enum": ["BMO", "AMC", "DURING_MARKET", "TAS", "TNS", "UNKNOWN"] },
+        "releaseState": { "enum": ["UPCOMING", "VERIFIED_RELEASED", "REPORTED_BY_SECONDARY_SOURCE"] },
+        "times": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["utc", "newYork", "hongKong"],
+          "properties": {
+            "utc": { "type": "string", "format": "date-time" },
+            "newYork": { "type": "string", "format": "date-time" },
+            "hongKong": { "type": "string", "format": "date-time" }
+          }
+        },
+        "eps": { "$ref": "#/$defs/metric" },
+        "revenue": { "$ref": "#/$defs/metric" },
+        "marketCap": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "currency", "asOf"],
+          "properties": {
+            "value": { "$ref": "#/$defs/nullableNumber" },
+            "currency": { "type": "string", "minLength": 3, "maxLength": 8 },
+            "asOf": { "type": ["string", "null"], "format": "date-time" }
+          }
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/source" }
+        },
+        "dataStatus": { "enum": ["PUBLIC_REVIEWED", "SYNTHETIC"] },
+        "redistributionStatus": { "enum": ["OFFICIAL_PUBLIC_FACT", "LICENSED", "USER_OWNED", "SYNTHETIC"] },
+        "publicReleaseApproved": { "type": "boolean" }
+      }
+    }
+  }
+}
+
